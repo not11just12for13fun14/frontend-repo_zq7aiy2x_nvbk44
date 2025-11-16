@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 // Simple fade + slide reveal on scroll
 function useReveal() {
@@ -21,6 +21,16 @@ function useReveal() {
     return () => obs.disconnect()
   }, [])
   return ref
+}
+
+function Delta({ value }) {
+  const positive = value > 0
+  const negative = value < 0
+  return (
+    <span className={`${positive ? 'text-emerald-400' : negative ? 'text-rose-400' : 'text-slate-300'} text-sm ml-2`}>
+      {positive ? '▲' : negative ? '▼' : '•'} {Math.abs(value).toFixed(2)}%
+    </span>
+  )
 }
 
 export function About() {
@@ -53,22 +63,55 @@ export function About() {
 
 export function Markets() {
   const ref = useReveal()
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [rows, setRows] = useState([])
+
+  useEffect(() => {
+    const base = import.meta.env.VITE_BACKEND_URL || ''
+    fetch(`${base}/api/markets`)
+      .then(r => r.json())
+      .then(json => {
+        setRows(json.data || [])
+        setLoading(false)
+      })
+      .catch(err => {
+        setError('No se pudo cargar el mercado')
+        setLoading(false)
+      })
+  }, [])
+
   return (
     <section id="markets" className="relative py-24 bg-gradient-to-b from-slate-950 to-slate-900">
       <div className="max-w-7xl mx-auto px-6">
         <div ref={ref} className="opacity-0 translate-y-6 transition-all duration-700">
-          <h2 className="text-3xl sm:text-4xl font-semibold text-white">Market insights</h2>
+          <h2 className="text-3xl sm:text-4xl font-semibold text-white">Información de mercado</h2>
           <p className="mt-4 text-slate-300 max-w-3xl">
-            Live spreads, basis, and freight inform every trade. Our analytics layer blends fundamentals, flows, and macro signals to surface opportunities ahead of the tape.
+            Referencias rápidas de energía, metales y agrícolas. Datos ilustrativos para la demo.
           </p>
-          <div className="mt-10 grid sm:grid-cols-2 gap-6">
-            <div className="p-6 rounded-xl border border-white/10 bg-white/5">
-              <h3 className="text-white font-medium">Risk & hedging</h3>
-              <p className="text-slate-300 mt-2 text-sm">Integrated derivatives across exchanges and OTC to lock in margin and smooth volatility.</p>
+
+          <div className="mt-8 rounded-xl border border-white/10 bg-white/5 overflow-hidden">
+            <div className="grid grid-cols-12 text-xs uppercase tracking-wide text-slate-300/80 px-4 py-3">
+              <div className="col-span-3">Símbolo</div>
+              <div className="col-span-4">Instrumento</div>
+              <div className="col-span-3">Precio</div>
+              <div className="col-span-2 text-right">Variación</div>
             </div>
-            <div className="p-6 rounded-xl border border-white/10 bg-white/5">
-              <h3 className="text-white font-medium">Logistics & ops</h3>
-              <p className="text-slate-300 mt-2 text-sm">From vessel chartering to storage, we orchestrate the chain with precision and transparency.</p>
+            <div className="divide-y divide-white/10">
+              {loading && (
+                <div className="px-4 py-6 text-slate-300">Cargando…</div>
+              )}
+              {error && (
+                <div className="px-4 py-6 text-amber-300">{error}</div>
+              )}
+              {!loading && !error && rows.map((r) => (
+                <div key={r.symbol} className="grid grid-cols-12 px-4 py-4 hover:bg-white/5">
+                  <div className="col-span-3 font-mono text-slate-200">{r.symbol}</div>
+                  <div className="col-span-4 text-slate-200">{r.name}</div>
+                  <div className="col-span-3 text-slate-200">{r.price} <span className="text-slate-400 text-xs">{r.currency}</span></div>
+                  <div className="col-span-2 text-right"><Delta value={r.changePct} /></div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -84,14 +127,14 @@ export function Contact() {
       <div className="max-w-7xl mx-auto px-6">
         <div ref={ref} className="opacity-0 translate-y-6 transition-all duration-700">
           <div className="rounded-2xl border border-white/10 p-8 bg-white/5">
-            <h2 className="text-3xl sm:text-4xl font-semibold text-white">Let’s talk</h2>
-            <p className="mt-3 text-slate-300 max-w-2xl">Tell us about your flows, exposures, and goals. We’ll respond within one business day.</p>
+            <h2 className="text-3xl sm:text-4xl font-semibold text-white">Contáctanos</h2>
+            <p className="mt-3 text-slate-300 max-w-2xl">Cuéntanos sobre tus flujos, coberturas y objetivos. Respondemos dentro de 1 día hábil.</p>
             <form className="mt-8 grid sm:grid-cols-2 gap-4">
-              <input placeholder="Name" className="w-full rounded-md bg-white/10 border border-white/10 px-4 py-3 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-              <input placeholder="Company" className="w-full rounded-md bg-white/10 border border-white/10 px-4 py-3 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              <input placeholder="Nombre" className="w-full rounded-md bg-white/10 border border-white/10 px-4 py-3 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              <input placeholder="Empresa" className="w-full rounded-md bg-white/10 border border-white/10 px-4 py-3 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
               <input placeholder="Email" className="sm:col-span-2 w-full rounded-md bg-white/10 border border-white/10 px-4 py-3 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-              <textarea placeholder="Message" rows="4" className="sm:col-span-2 w-full rounded-md bg-white/10 border border-white/10 px-4 py-3 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
-              <button className="sm:col-span-2 px-5 py-3 rounded-md bg-white text-slate-900 font-medium hover:bg-slate-100">Send</button>
+              <textarea placeholder="Mensaje" rows="4" className="sm:col-span-2 w-full rounded-md bg-white/10 border border-white/10 px-4 py-3 text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+              <button className="sm:col-span-2 px-5 py-3 rounded-md bg-white text-slate-900 font-medium hover:bg-slate-100">Enviar</button>
             </form>
           </div>
         </div>

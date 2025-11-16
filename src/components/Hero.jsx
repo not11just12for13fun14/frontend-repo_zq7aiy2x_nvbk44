@@ -7,8 +7,27 @@ export default function Hero() {
 
   return (
     <section id="top" className="relative h-[92vh] w-full overflow-hidden">
-      {/* Fallback animated gradient backdrop */}
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-indigo-700 via-sky-700 to-blue-900 bg-[length:200%_200%] animate-gradient-x opacity-80" />
+      {/* Background media (video) */}
+      <div className="absolute inset-0 -z-20">
+        <video
+          className="h-full w-full object-cover opacity-50"
+          src="https://cdn.coverr.co/videos/coverr-oil-pump-jacks-8461/1080p.mp4"
+          autoPlay
+          muted
+          loop
+          playsInline
+        />
+        {/* Fallback image if video doesn't play */}
+        <img
+          src="https://images.unsplash.com/photo-1509474520651-53cf6a80500d?q=80&w=2070&auto=format&fit=crop"
+          alt="Commodity markets backdrop"
+          className="h-full w-full object-cover opacity-40 hidden"
+          onError={(e) => { e.currentTarget.classList.add('hidden') }}
+        />
+      </div>
+
+      {/* Fallback animated gradient backdrop (sits above media for subtle motion) */}
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-indigo-700/60 via-sky-700/50 to-blue-900/60 bg-[length:200%_200%] animate-gradient-x" />
 
       {/* Spline canvas */}
       <div className={`absolute inset-0 transition-opacity duration-700 ${ready ? 'opacity-100' : 'opacity-0'}`}>
@@ -21,7 +40,7 @@ export default function Hero() {
       </div>
 
       {/* Gradient overlay for readability */}
-      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-slate-900/40 via-slate-900/40 to-slate-950" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-slate-950/40 via-slate-950/40 to-slate-950" />
 
       <div className="relative h-full flex items-center">
         <div className="max-w-7xl mx-auto px-6 w-full">
@@ -44,7 +63,7 @@ export default function Hero() {
             )}
             {error && (
               <div className="mt-6 text-amber-300/90 text-sm">
-                3D scene failed to load. Showing animated backdrop instead.
+                3D scene failed to load. Background media shown instead.
               </div>
             )}
           </div>
