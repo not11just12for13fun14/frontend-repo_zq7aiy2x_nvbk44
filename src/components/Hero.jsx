@@ -1,10 +1,23 @@
+import { useState } from 'react'
 import Spline from '@splinetool/react-spline'
 
 export default function Hero() {
+  const [ready, setReady] = useState(false)
+  const [error, setError] = useState(false)
+
   return (
-    <section id="top" className="relative h-[92vh] w-full">
-      <div className="absolute inset-0">
-        <Spline scene="https://prod.spline.design/UngO8SNLfLcyPG7O/scene.splinecode" style={{ width: '100%', height: '100%' }} />
+    <section id="top" className="relative h-[92vh] w-full overflow-hidden">
+      {/* Fallback animated gradient backdrop */}
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-indigo-700 via-sky-700 to-blue-900 bg-[length:200%_200%] animate-gradient-x opacity-80" />
+
+      {/* Spline canvas */}
+      <div className={`absolute inset-0 transition-opacity duration-700 ${ready ? 'opacity-100' : 'opacity-0'}`}>
+        <Spline
+          scene="https://prod.spline.design/UngO8SNLfLcyPG7O/scene.splinecode"
+          onLoad={() => setReady(true)}
+          onError={() => setError(true)}
+          style={{ width: '100%', height: '100%' }}
+        />
       </div>
 
       {/* Gradient overlay for readability */}
@@ -24,6 +37,16 @@ export default function Hero() {
               <a href="#about" className="px-5 py-3 rounded-md bg-white text-slate-900 font-medium hover:bg-slate-100">Explore</a>
               <a href="#contact" className="px-5 py-3 rounded-md border border-white/30 text-white hover:bg-white/10">Talk to us</a>
             </div>
+            {!ready && !error && (
+              <div className="mt-6 text-slate-300/80 text-sm">
+                Loading 3D experience…
+              </div>
+            )}
+            {error && (
+              <div className="mt-6 text-amber-300/90 text-sm">
+                3D scene failed to load. Showing animated backdrop instead.
+              </div>
+            )}
           </div>
         </div>
       </div>
